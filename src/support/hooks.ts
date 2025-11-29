@@ -5,7 +5,7 @@ import { CustomWorld } from './world';
 setDefaultTimeout(60 * 1000);
 
 Before(async function (this: CustomWorld) {
-  this.browser = await chromium.launch({ headless: false });
+  this.browser = await chromium.launch({ headless: true });
   this.page = await this.browser.newPage();
 });
 
