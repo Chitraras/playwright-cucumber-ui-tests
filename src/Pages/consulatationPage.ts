@@ -25,7 +25,7 @@ export  class ConsultationPage {
     }
 
     async clickBookMySessionCTA() {
-        await this.page.click(consultationData.bookConsultationCTA);
+        await this.page.click(consultationData.bookMySessionButton);
     }
 
     async clickTimeZoneDropdown() {
@@ -72,7 +72,7 @@ export  class ConsultationPage {
     }
 
     async checkBookMySessionCTAExists(): Promise<boolean> {
-        return await this.page.isVisible(consultationData.bookConsultationCTA);
+        return await this.page.isVisible(consultationData.bookMySessionButton);
     }
 
     async checkYouTubePlayButtonExists(): Promise<boolean> {
@@ -109,5 +109,37 @@ export  class ConsultationPage {
             return true;
         }
         return await this.page.isVisible(consultationData.bookingSectionHeading);
+    }
+
+    async isBookingSectionInViewport(): Promise<boolean> {
+        const subheadingLocator = this.page.locator(consultationData.bookingSectionSubheading);
+        if ((await subheadingLocator.count()) === 0) {
+            return false;
+        }
+
+        const target = subheadingLocator.first();
+        await target.waitFor({ state: 'visible', timeout: 5000 });
+
+        const deadline = Date.now() + 5000;
+
+        while (Date.now() < deadline) {
+            try {
+                const isInViewport = await target.evaluate((element) => {
+                    const rect = element.getBoundingClientRect();
+                    const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+                    return rect.top < viewHeight && rect.bottom > 0;
+                });
+
+                if (isInViewport) {
+                    return true;
+                }
+            } catch (error) {
+                // Ignore transient DOM detaches and retry until timeout.
+            }
+
+            await this.page.waitForTimeout(100);
+        }
+
+        return false;
     }
 } 

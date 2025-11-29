@@ -4,7 +4,8 @@ export const consultationData = {
     // CTA Buttons
     firstStepCTAButton: 'text=Take your First Step Now',
     bookConsultationCTA: 'text=Book My 15-Minute Consultation',
-    bookMySessionButton: 'text=Book My Session — ₹199',
+    bookMySessionButton: 'text=Book My 15-Minute Consultation',
+    sessionPriceButton: 'text=Book My Session — ₹199',
     
     
     // Booking Form Selectors
@@ -12,6 +13,7 @@ export const consultationData = {
     dateSelector: 'button:has-text("Select a Date")',
     timeSelector: 'button:has-text("Select a Time")',
     bookingSectionHeading: 'text=Book your 15-minute consultation',
+    bookingSectionSubheading: 'text=Pick a time that works for you. Your journey to clarity starts here.',
     bookingSectionContainer: 'section:has-text("Book your 15-minute consultation")',
     
     // Session Details Section
