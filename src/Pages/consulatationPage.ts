@@ -40,6 +40,56 @@ export  class ConsultationPage {
         await this.page.waitForTimeout(300);
     }
 
+    // Get Free Resources popup interactions
+    async scrollToGetResourcesCTA() {
+        const target = this.page.locator(consultationData.getResourcesCTAButton).first();
+        await target.scrollIntoViewIfNeeded();
+        await this.page.waitForTimeout(300);
+    }
+
+    async checkGetResourcesCTAExists(): Promise<boolean> {
+        return await this.page.isVisible(consultationData.getResourcesCTAButton);
+    }
+
+    async clickGetResourcesCTA() {
+        await this.page.click(consultationData.getResourcesCTAButton);
+    }
+
+    async checkGetResourcesPopupVisible(): Promise<boolean> {
+        return await this.page.isVisible(consultationData.getResourcesPopUp);
+    }
+    async clickCloseResourcesButton() {
+        await this.page.click(consultationData.closeResourcesButton);
+    }
+
+    /**
+     * Waits for the resources popup to reach the expected state (visible/hidden)
+     * then returns the current visibility state. Use `expected=true` to wait
+     * for visibility, `expected=false` to wait for it to hide.
+     */
+    async isGetResourcesPopupVisible(expected: boolean = true, timeout: number = 5000): Promise<boolean> {
+        const popup = this.page.locator(consultationData.getResourcesPopUp);
+        try {
+            await popup.waitFor({ state: expected ? 'visible' : 'hidden', timeout });
+        } catch (error) {
+            // ignore timeout — we'll return the current visibility state below
+        }
+
+        return await popup.isVisible();
+    }
+
+    async enterResourceName(name: string) {
+        await this.page.fill(consultationData.enterNameInput, name);
+    }
+
+    async enterResourceEmail(email: string) {
+        await this.page.fill(consultationData.enterEmailInput, email);
+    }
+
+    async clickSubmitResourcesButton() {
+        await this.page.click(consultationData.submitResourcesButton);
+    }
+
 // Verification Methods on consultation page
     async checkBookingCTAExists(): Promise<boolean> {
         return await this.page.isVisible(consultationData.bookConsultationCTA);
