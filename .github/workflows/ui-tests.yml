@@ -2,29 +2,47 @@ name: UI Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
 
 jobs:
-  test:
+  ui-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Install Playwright system dependencies
+        # installs OS packages required by browsers
+        run: npx playwright install-deps
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install
 
-      - name: Run Cucumber UI tests
+      - name: Run UI tests (headless)
         run: npm test
+        env:
+          CI: true
+
+# If you need headed mode for debugging, replace the Run UI tests step above with the block below:
+#      - name: Run UI tests under Xvfb (headed)
+#        run: xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' npm test
+#        env:
+#          CI: true
