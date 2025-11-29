@@ -1,5 +1,5 @@
 import { Before, After, BeforeStep, AfterStep, setDefaultTimeout } from '@cucumber/cucumber';
-import { chromium } from 'playwright';
+import { chromium, devices } from 'playwright';
 import { CustomWorld } from './world';
 
 setDefaultTimeout(60 * 1000);
@@ -7,7 +7,19 @@ setDefaultTimeout(60 * 1000);
 Before(async function (this: CustomWorld, scenario: any) {
   console.log(`\n=== Starting scenario: ${scenario?.pickle?.name ?? 'Unnamed scenario'} ===`);
   this.browser = await chromium.launch({ headless: true });
-  this.page = await this.browser.newPage();
+  
+  // Select device based on DEVICE environment variable
+  const deviceName = process.env.DEVICE;
+  let contextOptions = {};
+  
+  if (deviceName && devices[deviceName]) {
+    console.log(`Using mobile device: ${deviceName}`);
+    contextOptions = devices[deviceName];
+  } else if (deviceName) {
+    console.warn(`Device "${deviceName}" not found, using default viewport`);
+  }
+  
+  this.page = await this.browser.newPage(contextOptions);
 });
 
 BeforeStep(async function (this: CustomWorld, step: any) {
