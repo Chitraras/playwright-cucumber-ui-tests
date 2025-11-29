@@ -16,40 +16,12 @@ export  class ConsultationPage {
 
 //CTA Button Click Methods on consultation page
     
-    async clickBookingCTA() {
-        await this.page.click(consultationData.bookConsultationCTA);
-    }
-
     async clickTryYourFirstStepCTA() {
         await this.page.click(consultationData.firstStepCTAButton);
     }
 
     async clickBookMySessionCTA() {
         await this.page.click(consultationData.bookMySessionButton);
-    }
-
-    async clickTimeZoneDropdown() {
-        await this.page.locator(consultationData.timezoneSelector).click();
-    }
-
-    async selectTimeZone(timeZone: string) {
-        await this.page.locator(consultationData.timezoneSelector).selectOption({ label: timeZone });
-    }
-
-    async clickGivenDatePicker(date:any) {
-        await this.page.getByRole('button', { name: String(date) }).click();
-    }
-
-    async clickGivenTimeSlot(timeSlot: string) {
-        await this.page.getByRole('button', { name: timeSlot }).click();
-    }
-
-    async clickGetFreeResourcesCTA() {
-        await this.page.click(consultationData.getResourcesButton);
-    }
-
-    async clickDownloadResourcesCTA() {
-        await this.page.click(consultationData.downloadResourcesButton);
     }
 
     async scrollToBottomBookingCTA() {
@@ -68,16 +40,6 @@ export  class ConsultationPage {
         await this.page.waitForTimeout(300);
     }
 
-// Input Methods on consultation page
-    async enterFullName(fullName: string) {
-        await this.page.fill('', fullName);
-    }
-
-    async enterEmail(email: string) {
-        await this.page.fill('', email);
-    }
-
-
 // Verification Methods on consultation page
     async checkBookingCTAExists(): Promise<boolean> {
         return await this.page.isVisible(consultationData.bookConsultationCTA);
@@ -91,33 +53,8 @@ export  class ConsultationPage {
         return await this.page.isVisible(consultationData.bookMySessionButton);
     }
 
-    async checkYouTubePlayButtonExists(): Promise<boolean> {
-        return await this.page.isVisible('');
-    }
-
     async checkTimeZoneDropdownExists(): Promise<boolean> {
         return await this.page.isVisible(consultationData.timezoneSelector);
-    }
-
-    async checkTimeZoneSelected(timeZone: string): Promise<boolean> {
-        const value = await this.page.locator(consultationData.timezoneSelector).inputValue();
-        return value.includes(timeZone);
-    }
-
-    async checkDatePickerExists(date: any): Promise<boolean> {
-        return await this.page.isVisible('' + date + '');
-    }
-
-    async checkTimeSlotExists(timeSlot: string): Promise<boolean> {
-        return await this.page.isVisible('' + timeSlot + '');
-    }
-
-    async checkGetFreeResourcesCTAExists(): Promise<boolean> {
-        return await this.page.isVisible(consultationData.getResourcesButton);
-    }
-
-    async checkDownloadResourcesCTAExists(): Promise<boolean> {
-        return await this.page.isVisible(consultationData.downloadResourcesButton);
     }
 
     async checkBookingSectionVisible(): Promise<boolean> {
