@@ -1,6 +1,9 @@
 import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
 import { Given, When, Then } from '@cucumber/cucumber';
 import { ConsultationPage } from '../Pages/consulatationPage';
+import { consultationData } from '../Test-Data/consultationData';
 import { CustomWorld } from '../support/world';
 
 let consultationPage: ConsultationPage;
@@ -59,5 +62,72 @@ Then('the booking section should be displayed', async function (this: CustomWorl
 
     const dropdownVisible = await consultationPage.checkTimeZoneDropdownExists();
     assert.ok(dropdownVisible, 'Booking section timezone dropdown is not visible');  
+});
+
+When('the user scrolls down to the Get Free Resources CTA', async function (this: CustomWorld) {
+    await consultationPage.scrollToGetResourcesCTA();
+    const exists = await consultationPage.checkGetResourcesCTAExists();
+    assert.ok(exists, 'Get Free Resources CTA is not visible after scrolling');
+});
+
+When('the user clicks the Get Free Resources CTA button', async function (this: CustomWorld) {
+    const isVisible = await consultationPage.checkGetResourcesCTAExists();
+    assert.ok(isVisible, 'Get Free Resources CTA is not visible');
+    await consultationPage.clickGetResourcesCTA();
+});
+
+Then('the Get Resources popup should be displayed', async function (this: CustomWorld) {
+    const visible = await consultationPage.isGetResourcesPopupVisible(true);
+    assert.ok(visible, 'Get Resources popup is not visible');
+});
+
+When('the user clicks the popup close icon', async function (this: CustomWorld) {
+    await consultationPage.clickCloseResourcesButton();
+});
+
+Then('the Get Resources popup should not be visible', async function (this: CustomWorld) {
+    const visible = await consultationPage.isGetResourcesPopupVisible(false);
+    assert.ok(!visible, 'Get Resources popup is still visible after clicking close');
+});
+
+When('the user enters their name and email into the resources form', async function (this: CustomWorld) {
+    await consultationPage.enterResourceName(consultationData.Name);
+    await consultationPage.enterResourceEmail(consultationData.Email);
+});
+
+When('the user clicks the Download Resources button', async function (this: CustomWorld) {
+    const downloadsDir = path.join(process.cwd(), 'downloads');
+    if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir, { recursive: true });
+
+    const [download] = await Promise.all([
+        this.page.waitForEvent('download'),
+        consultationPage.clickSubmitResourcesButton()
+    ]);
+
+    const suggested = download.suggestedFilename();
+    const savePath = path.join(downloadsDir, suggested);
+    await download.saveAs(savePath);
+
+    this.latestDownload = download;
+    this.latestDownloadFilename = suggested;
+    this.latestDownloadPath = savePath;
+});
+
+Then('the Get Resources popup should be closed', async function (this: CustomWorld) {
+    const visible = await consultationPage.isGetResourcesPopupVisible(false);
+    assert.ok(!visible, 'Get Resources popup is still visible after submitting');
+});
+
+When('the file download should be initiated', async function (this: CustomWorld) {
+    assert.ok(this.latestDownload, 'No download was initiated');
+});
+
+Then('the downloaded file should exist in the downloads folder', async function (this: CustomWorld) {
+    const p = this.latestDownloadPath;
+    assert.ok(p, 'No saved download path recorded');
+    const exists = fs.existsSync(p as string);
+    assert.ok(exists, `Downloaded file not found at ${p}`);
+    const stat = fs.statSync(p as string);
+    assert.ok(stat.size > 0, 'Downloaded file is empty');
 });
 
