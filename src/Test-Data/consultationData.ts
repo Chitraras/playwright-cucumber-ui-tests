@@ -3,9 +3,13 @@ export const consultationData = {
     
     // CTA Buttons
     firstStepCTAButton: 'text=Take your First Step Now',
+    firstStepSectionHeading: 'text=Start feeling better in just 15 Minutes',
+    firstStepSectionSubheading: 'text=Simple, no pressure',
+    firstStepSectionContainer: 'section:has-text("Take your First Step Now")',
     bookConsultationCTA: 'text=Book My 15-Minute Consultation',
     bookMySessionButton: 'text=Book My 15-Minute Consultation',
     sessionPriceButton: 'text=Book My Session — ₹199',
+    bottomBookMySessionButton: 'button:has-text("Book your 15-minute consultation")',
     
     
     // Booking Form Selectors
