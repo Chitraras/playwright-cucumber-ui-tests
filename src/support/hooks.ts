@@ -6,7 +6,7 @@ setDefaultTimeout(60 * 1000);
 
 Before(async function (this: CustomWorld, scenario: any) {
   console.log(`\n=== Starting scenario: ${scenario?.pickle?.name ?? 'Unnamed scenario'} ===`);
-  this.browser = await chromium.launch({ headless: false });
+  this.browser = await chromium.launch({ headless: true });
   this.page = await this.browser.newPage();
 });
 
