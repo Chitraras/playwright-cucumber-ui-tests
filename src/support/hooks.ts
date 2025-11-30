@@ -13,7 +13,7 @@ Before(async function (this: CustomWorld, scenario: any) {
   this.browser = await chromium.launch({ headless: true });
   
   // Select device based on DEVICE environment variable
-  const deviceName = process.env.DEVICE;
+  const deviceName = 'iPhone 13'; // process.env.DEVICE; // Example: 'iPhone 13'
   let contextOptions = {};
   
   if (deviceName && devices[deviceName]) {
