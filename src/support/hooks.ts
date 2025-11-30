@@ -1,6 +1,10 @@
 import { Before, After, BeforeStep, AfterStep, setDefaultTimeout } from '@cucumber/cucumber';
 import { chromium, devices } from 'playwright';
 import { CustomWorld } from './world';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 setDefaultTimeout(60 * 1000);
 

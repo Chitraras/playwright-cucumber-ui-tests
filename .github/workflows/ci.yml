@@ -1,0 +1,30 @@
+name: CI - Playwright Cucumber
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Cucumber tag to run (e.g. @EMC_01)'
+        required: false
+        default: '@EMC_01'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests for tag
+        env:
+          TAG: ${{ github.event.inputs.tag }}
+        run: |
+          echo "Running tests for tag: $TAG"
+          npm run test:tag -- --tags "$TAG"

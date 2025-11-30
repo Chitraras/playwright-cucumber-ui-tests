@@ -1,5 +1,6 @@
 Feature: Consultation Page CTA Buttons
 
+    @EMC_01
     Scenario: EMC_01 Validate the "Book your 15-minute consultation" CTA buttons
         Given the consultation page is loaded
         When the user clicks the Book My Session CTA button
@@ -11,6 +12,7 @@ Feature: Consultation Page CTA Buttons
         When the user clicks the Book My Session CTA button at the bottom
         Then the booking section should be displayed
 
+    @EMC_02
     Scenario: EMC_02 Validate the "Get Free Resources" CTA button
         Given the consultation page is loaded
         When the user scrolls down to the Get Free Resources CTA
