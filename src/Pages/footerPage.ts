@@ -1,5 +1,6 @@
 import { Page } from 'playwright';
 import { footerData } from '../Test-Data/footerData';
+import assert from 'assert';
 
 export class FooterPage {
     private page: Page;
@@ -32,6 +33,59 @@ export class FooterPage {
         const selector = footerData.socialIcons[iconKey];
         return await this.page.isVisible(selector);
     }
-}
+
+    
+    async validatePageNavigation(linkText: string): Promise<boolean> {
+        // Convert link text to key format (e.g., "How It Works" -> "howitworks")
+        const sectionKey = linkText.toLowerCase().replace(/\s+/g, '');
+        
+        // Get the selector from footerData based on the section key
+        const navigationSectionSelector = (footerData as any)[sectionKey] || `text=${linkText}`;
+        
+        console.log('Looking for section:', sectionKey, 'with selector:', navigationSectionSelector);
+        
+        const navigationSection = this.page.locator(navigationSectionSelector);
+        
+        if ((await navigationSection.count()) === 0) {
+            console.warn(`Section "${linkText}" not found with selector: ${navigationSectionSelector}`);
+            return false;
+        }
+
+        const target = navigationSection.first();
+        await target.waitFor({ state: 'visible', timeout: 5000 });
+
+        const deadline = Date.now() + 5000;
+
+        while (Date.now() < deadline) {
+            try {
+                const isInViewport = await target.evaluate((element) => {
+                    const rect = element.getBoundingClientRect();
+                    const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+                    return rect.top < viewHeight && rect.bottom > 0;
+                });
+
+                if (isInViewport) {
+                    return true;
+                }
+            } catch (error) {
+                // Ignore transient DOM detaches and retry until timeout.
+            }
+
+            await this.page.waitForTimeout(100);
+        }
+
+        return false;
+    }
+
+    async validateContactInfoDisplayed(): Promise<boolean> {
+        const addressVisible = await this.page.isVisible(footerData.contactAddress);
+        assert.ok(addressVisible, 'Contact address is not visible in the footer');
+        const emailVisible = await this.page.isVisible(footerData.contactEmail);
+        assert.ok(emailVisible, 'Contact email is not visible in the footer');
+        const phoneVisible = await this.page.isVisible(footerData.contactPhone);
+        assert.ok(phoneVisible, 'Contact phone is not visible in the footer');
+        return addressVisible && emailVisible && phoneVisible;
+    }
+} 
 
 export default FooterPage;
