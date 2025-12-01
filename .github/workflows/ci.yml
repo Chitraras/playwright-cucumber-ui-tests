@@ -10,7 +10,7 @@ on:
       parallel:
         description: 'Run tests in parallel devices'
         required: false
-        default: 'false'
+        default: 'true'
         type: choice
         options:
           - 'true'
