@@ -26,7 +26,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: ${{ fromJSON(github.event.inputs.parallel == 'true' && '[1, 2, 3, 4]' || '[1]') }}
+        include:
+          - name: desktop-chromium
+            browser: chromium
+            device: ''
+          - name: desktop-firefox
+            browser: firefox
+            device: ''
+          - name: iphone-13
+            browser: webkit
+            device: 'iPhone 13'
+          - name: pixel-5
+            browser: chromium
+            device: 'Pixel 5'
     steps:
       - uses: actions/checkout@v4
 
@@ -50,26 +62,26 @@ jobs:
         env:
           TAG: ${{ github.event.inputs.tag }}
           EMC_Downloads_Path: ${{ github.workspace }}/downloads
-          DEVICE: ${{ github.event.inputs.device }}
+          DEVICE: ${{ matrix.device }}
+          BROWSER: ${{ matrix.browser }}
           HEADLESS: 'true'
-          TOTAL_SHARDS: ${{ github.event.inputs.parallel == 'true' && '4' || '1' }}
-          SHARD: ${{ format('{0}/{1}', matrix.shard, github.event.inputs.parallel == 'true' && '4' || '1') }}
         run: |
           echo "Running tests for tag: ${TAG:-all tests}"
+          echo "Matrix job: ${{ matrix.name }}"
+          echo "Browser: ${BROWSER:-default}"
           echo "Device: ${DEVICE:-desktop}"
-          echo "Downloads path: $EMC_Downloads_Path"
-          echo "Parallel shard: $SHARD"
+          echo "Downloads path: $EMC_DownloadS_Path"
           if [ -n "$TAG" ]; then
-            npm run test:tag -- --tags "$TAG" --parallel $TOTAL_SHARDS --shard "$SHARD"
+            npm run test:tag -- --tags "$TAG"
           else
-            npm test -- --parallel $TOTAL_SHARDS --shard "$SHARD"
+            npm test
           fi
 
       - name: Upload test results on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-shard-${{ matrix.shard }}-${{ github.run_id }}
+          name: test-results-${{ matrix.name }}-${{ github.run_id }}
           path: |
             ${{ github.workspace }}/downloads
             ${{ github.workspace }}/test-results
@@ -80,7 +92,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: downloads-shard-${{ matrix.shard }}-${{ github.run_id }}
+          name: downloads-${{ matrix.name }}-${{ github.run_id }}
           path: ${{ github.workspace }}/downloads
           retention-days: 3
           if-no-files-found: ignore
