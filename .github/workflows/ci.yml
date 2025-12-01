@@ -7,12 +7,8 @@ on:
         description: 'Cucumber tag to run (e.g. @EMC_01, @FTR_01, or leave empty for all tests)'
         required: false
         default: ''
-      device:
-        description: 'Device to test (e.g. iPhone 13, Pixel 5, or leave empty for desktop)'
-        required: false
-        default: ''
       parallel:
-        description: 'Run tests in parallel'
+        description: 'Run tests in parallel devices'
         required: false
         default: 'false'
         type: choice
