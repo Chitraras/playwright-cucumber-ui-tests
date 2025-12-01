@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  schedule:
+    # Runs daily at 09:00 IST (India Standard Time) -> 03:30 UTC
+    # Cron expressions for GitHub Actions use UTC time.
+    - cron: '30 3 * * *'
   workflow_dispatch:
     inputs:
       tag:
