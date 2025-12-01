@@ -1,5 +1,3 @@
-import { link } from "fs";
-
 export const footerData = {
     // Footer root selector — adjust if your app uses a different element
     footerSelector: '//div[contains(@class, "grid-cols-1")]',

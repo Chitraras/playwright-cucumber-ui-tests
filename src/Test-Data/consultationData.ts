@@ -23,7 +23,7 @@ export const consultationData = {
     getResourcesPopUp: '//div[contains(@class, "inset-0 z-50")]',
     
 
-    // Booking Form Selectors
+    // Booking section verification
     timezoneSelector: '//select[contains(@class, "duration-200")]',
     dateSelector: 'button:has-text("Select a Date")',
     timeSelector: 'button:has-text("Select a Time")',

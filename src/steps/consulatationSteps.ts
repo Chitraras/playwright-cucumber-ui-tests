@@ -8,10 +8,16 @@ import { CustomWorld } from '../support/world';
 
 let consultationPage: ConsultationPage;
 
+const resolveDownloadsDir = (): string => {
+    const configuredPath = process.env.EMC_Downloads_Path;
+    return configuredPath && configuredPath.length > 0
+        ? configuredPath
+        : path.join(process.cwd(), 'downloads');
+};
+
 Given('the consultation page is loaded', async function (this: CustomWorld) {
     consultationPage = new ConsultationPage(this.page);
     await consultationPage.navigateToConsultationPage();
-    console.log('Navigated to Consultation Page');
 });
 
 When('the user clicks the Book My Session CTA button', async function (this: CustomWorld) {
@@ -96,14 +102,11 @@ When('the user enters their name and email into the resources form', async funct
 });
 
 When('the user clicks the Download Resources button', async function (this: CustomWorld) {
-    // Determine downloads directory (prefer env var set by CI or .env)
-    const downloadsDir = process.env.EMC_Downloads_Path && process.env.EMC_Downloads_Path.length > 0
-        ? process.env.EMC_Downloads_Path
-        : path.join(process.cwd(), 'downloads');
+    const downloadsDir = resolveDownloadsDir();
+    if (!fs.existsSync(downloadsDir)) {
+        fs.mkdirSync(downloadsDir, { recursive: true });
+    }
 
-    if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir, { recursive: true });
-
-    // Use Playwright's download event pattern: wait for 'download' while clicking the button
     const [download] = await Promise.all([
         this.page.waitForEvent('download'),
         consultationPage.clickSubmitResourcesButton()
@@ -112,10 +115,8 @@ When('the user clicks the Download Resources button', async function (this: Cust
     const suggested = download.suggestedFilename() || `download-${Date.now()}`;
     const savePath = path.join(downloadsDir, suggested);
 
-    // Save the file to the deterministic downloads folder
     await download.saveAs(savePath);
 
-    // Store download info on the World for later assertions
     this.latestDownload = download;
     this.latestDownloadFilename = suggested;
     this.latestDownloadPath = savePath;
@@ -127,60 +128,20 @@ Then('the Get Resources popup should be closed', async function (this: CustomWor
 });
 
 When('the file download should be initiated', async function (this: CustomWorld) {
-    // Debug: print cwd and list downloads folder before asserting
-    const downloadsDir = process.env.EMC_Downloads_Path && process.env.EMC_Downloads_Path.length > 0
-        ? process.env.EMC_Downloads_Path
-        : path.join(process.cwd(), 'downloads');
-
-    console.log('CWD:', process.cwd());
-    try {
-        const before = fs.existsSync(downloadsDir) ? fs.readdirSync(downloadsDir) : [];
-        console.log('Downloads folder content before assertion:', before);
-    } catch (err) {
-        console.warn('Could not list downloads dir before assertion:', err);
-    }
-
     assert.ok(this.latestDownload, 'No download was initiated');
-    console.log('Download object captured. Suggested filename:', this.latestDownloadFilename);
-    console.log('Saved path:', this.latestDownloadPath);
-    try {
-        const after = fs.existsSync(downloadsDir) ? fs.readdirSync(downloadsDir) : [];
-        console.log('Downloads folder content after download:', after);
-    } catch (err) {
-        console.warn('Could not list downloads dir after assertion:', err);
-    }
 });
 
 Then('the downloaded file should exist in the downloads folder', async function (this: CustomWorld) {
-    const downloadsDir = process.env.EMC_Downloads_Path && process.env.EMC_Downloads_Path.length > 0
-        ? process.env.EMC_Downloads_Path
-        : path.join(process.cwd(), 'downloads');
-
-    console.log('Checking downloads in:', downloadsDir);
-    try {
-        const before = fs.existsSync(downloadsDir) ? fs.readdirSync(downloadsDir) : [];
-        console.log('Downloads folder content before final assert:', before);
-    } catch (err) {
-        console.warn('Could not list downloads dir before final assert:', err);
+    const downloadsDir = resolveDownloadsDir();
+    if (!fs.existsSync(downloadsDir)) {
+        throw new Error(`Downloads directory not found at ${downloadsDir}`);
     }
 
-    const p = this.latestDownloadPath;
-    assert.ok(p, 'No saved download path recorded');
+    const savedPath = this.latestDownloadPath;
+    assert.ok(savedPath, 'No saved download path recorded');
 
-    try {
-        await fs.promises.access(p as string, fs.constants.R_OK);
-    } catch (err) {
-        throw new Error(`Downloaded file not accessible at ${p}: ${err}`);
-    }
-
-    const stat = fs.statSync(p as string);
+    await fs.promises.access(savedPath, fs.constants.R_OK);
+    const stat = await fs.promises.stat(savedPath);
     assert.ok(stat.size > 0, 'Downloaded file is empty');
-
-    try {
-        const after = fs.existsSync(downloadsDir) ? fs.readdirSync(downloadsDir) : [];
-        console.log('Downloads folder content after final assert:', after);
-    } catch (err) {
-        console.warn('Could not list downloads dir after final assert:', err);
-    }
 });
 
