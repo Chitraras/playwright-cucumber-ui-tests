@@ -4,13 +4,29 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Cucumber tag to run (e.g. @EMC_01)'
+        description: 'Cucumber tag to run (e.g. @EMC_01, @FTR_01, or leave empty for all tests)'
         required: false
-        default: '@EMC_01'
+        default: ''
+      device:
+        description: 'Device to test (e.g. iPhone 13, Pixel 5, or leave empty for desktop)'
+        required: false
+        default: ''
+      parallel:
+        description: 'Run tests in parallel'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(github.event.inputs.parallel == 'true' && '[1, 2, 3, 4]' || '[1]') }}
     steps:
       - uses: actions/checkout@v4
 
@@ -34,15 +50,37 @@ jobs:
         env:
           TAG: ${{ github.event.inputs.tag }}
           EMC_Downloads_Path: ${{ github.workspace }}/downloads
+          DEVICE: ${{ github.event.inputs.device }}
           HEADLESS: 'true'
+          SHARD: ${{ matrix.shard }}
+          TOTAL_SHARDS: ${{ github.event.inputs.parallel == 'true' && '4' || '1' }}
         run: |
-          echo "Running tests for tag: $TAG"
-          echo "Downloads path: $EMC_DownloadS_Path"
-          npm run test:tag -- --tags "$TAG"
+          echo "Running tests for tag: ${TAG:-all tests}"
+          echo "Device: ${DEVICE:-desktop}"
+          echo "Downloads path: $EMC_Downloads_Path"
+          echo "Parallel shard: $SHARD/$TOTAL_SHARDS"
+          if [ -n "$TAG" ]; then
+            npm run test:tag -- --tags "$TAG" --parallel $TOTAL_SHARDS --shard $SHARD
+          else
+            npm test -- --parallel $TOTAL_SHARDS --shard $SHARD
+          fi
 
-      - name: Upload downloads artifact on failure
+      - name: Upload test results on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: downloads-${{ github.run_id }}
+          name: test-results-shard-${{ matrix.shard }}-${{ github.run_id }}
+          path: |
+            ${{ github.workspace }}/downloads
+            ${{ github.workspace }}/test-results
+            ${{ github.workspace }}/playwright-report
+          retention-days: 7
+
+      - name: Upload downloads artifact (always for debugging)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: downloads-shard-${{ matrix.shard }}-${{ github.run_id }}
           path: ${{ github.workspace }}/downloads
+          retention-days: 3
+          if-no-files-found: ignore
