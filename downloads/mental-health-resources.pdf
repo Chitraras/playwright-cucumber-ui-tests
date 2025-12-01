@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logos/PNG/Eleven Mindcare Main No Name.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Eleven Mindcare - Compassionate and effective mental health care tailored to your individual needs. Your journey to mental wellness starts here." />
+    <title>Eleven Mindcare - Mental Health Care & Wellness</title>
+    <script type="module" crossorigin src="/assets/index-DiQICrML.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Df0Yl_Gi.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
