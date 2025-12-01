@@ -52,17 +52,17 @@ jobs:
           EMC_Downloads_Path: ${{ github.workspace }}/downloads
           DEVICE: ${{ github.event.inputs.device }}
           HEADLESS: 'true'
-          SHARD: ${{ matrix.shard }}
           TOTAL_SHARDS: ${{ github.event.inputs.parallel == 'true' && '4' || '1' }}
+          SHARD: ${{ format('{0}/{1}', matrix.shard, github.event.inputs.parallel == 'true' && '4' || '1') }}
         run: |
           echo "Running tests for tag: ${TAG:-all tests}"
           echo "Device: ${DEVICE:-desktop}"
           echo "Downloads path: $EMC_Downloads_Path"
-          echo "Parallel shard: $SHARD/$TOTAL_SHARDS"
+          echo "Parallel shard: $SHARD"
           if [ -n "$TAG" ]; then
-            npm run test:tag -- --tags "$TAG" --parallel $TOTAL_SHARDS --shard $SHARD
+            npm run test:tag -- --tags "$TAG" --parallel $TOTAL_SHARDS --shard "$SHARD"
           else
-            npm test -- --parallel $TOTAL_SHARDS --shard $SHARD
+            npm test -- --parallel $TOTAL_SHARDS --shard "$SHARD"
           fi
 
       - name: Upload test results on failure
