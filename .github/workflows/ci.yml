@@ -4,13 +4,37 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Cucumber tag to run (e.g. @EMC_01)'
+        description: 'Cucumber tag to run (e.g. @EMC_01, @FTR_01, or leave empty for all tests)'
         required: false
-        default: '@EMC_01'
+        default: ''
+      parallel:
+        description: 'Run tests in parallel devices'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: desktop-chromium
+            browser: chromium
+            device: ''
+          - name: desktop-firefox
+            browser: firefox
+            device: ''
+          - name: iphone-13
+            browser: webkit
+            device: 'iPhone 13'
+          - name: pixel-5
+            browser: chromium
+            device: 'Pixel 5'
     steps:
       - uses: actions/checkout@v4
 
@@ -34,15 +58,37 @@ jobs:
         env:
           TAG: ${{ github.event.inputs.tag }}
           EMC_Downloads_Path: ${{ github.workspace }}/downloads
+          DEVICE: ${{ matrix.device }}
+          BROWSER: ${{ matrix.browser }}
           HEADLESS: 'true'
         run: |
-          echo "Running tests for tag: $TAG"
+          echo "Running tests for tag: ${TAG:-all tests}"
+          echo "Matrix job: ${{ matrix.name }}"
+          echo "Browser: ${BROWSER:-default}"
+          echo "Device: ${DEVICE:-desktop}"
           echo "Downloads path: $EMC_DownloadS_Path"
-          npm run test:tag -- --tags "$TAG"
+          if [ -n "$TAG" ]; then
+            npm run test:tag -- --tags "$TAG"
+          else
+            npm test
+          fi
 
-      - name: Upload downloads artifact on failure
+      - name: Upload test results on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: downloads-${{ github.run_id }}
+          name: test-results-${{ matrix.name }}-${{ github.run_id }}
+          path: |
+            ${{ github.workspace }}/downloads
+            ${{ github.workspace }}/test-results
+            ${{ github.workspace }}/playwright-report
+          retention-days: 7
+
+      - name: Upload downloads artifact (always for debugging)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: downloads-${{ matrix.name }}-${{ github.run_id }}
           path: ${{ github.workspace }}/downloads
+          retention-days: 3
+          if-no-files-found: ignore
