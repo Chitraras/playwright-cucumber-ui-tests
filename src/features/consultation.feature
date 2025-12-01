@@ -26,3 +26,14 @@ Feature: Consultation Page CTA Buttons
         Then the Get Resources popup should be closed
         And the file download should be initiated
         And the downloaded file should exist in the downloads folder
+
+    @EMC_03
+    Scenario: EMC_03 Book a 15-minute consultation flow
+        Given the consultation page is loaded
+        When the user clicks the Book My Session CTA button
+        Then the booking section should be displayed
+        And Select a session with avaiable slot
+        Then the user fills the booking form with booking test data
+        And the user fills additional booking details
+        And the user clicks the OTP verification CTA
+        

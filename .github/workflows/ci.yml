@@ -81,7 +81,7 @@ jobs:
           echo "Matrix job: ${{ matrix.name }}"
           echo "Browser: ${BROWSER:-default}"
           echo "Device: ${DEVICE:-desktop}"
-          echo "Downloads path: $EMC_DownloadS_Path"
+          echo "Downloads path: $EMC_Downloads_Path"
           if [ -n "$TAG" ]; then
             npm run test:tag -- --tags "$TAG"
           else

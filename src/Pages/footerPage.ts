@@ -11,8 +11,8 @@ export class FooterPage {
 
     async scrollToFooter() {
         const target = this.page.locator(footerData.footerSelector).first();
-                await target.scrollIntoViewIfNeeded();
-                await this.page.waitForTimeout(300);
+        await target.scrollIntoViewIfNeeded();
+        await this.page.waitForTimeout(300);
     }
 
     async isFooterVisible(): Promise<boolean> {
@@ -34,21 +34,12 @@ export class FooterPage {
         return await this.page.isVisible(selector);
     }
 
-    
-    async validatePageNavigation(linkText: string): Promise<boolean> {
-        // Convert link text to key format (e.g., "How It Works" -> "howitworks")
+    async validatePageNavigation(linkText: string): Promise<void> {
         const sectionKey = linkText.toLowerCase().replace(/\s+/g, '');
-        
-        // Get the selector from footerData based on the section key
         const navigationSectionSelector = (footerData as any)[sectionKey] || `text=${linkText}`;
-        
-        console.log('Looking for section:', sectionKey, 'with selector:', navigationSectionSelector);
-        
         const navigationSection = this.page.locator(navigationSectionSelector);
-        
         if ((await navigationSection.count()) === 0) {
-            console.warn(`Section "${linkText}" not found with selector: ${navigationSectionSelector}`);
-            return false;
+            throw new Error(`Section "${linkText}" not found with selector: ${navigationSectionSelector}`);
         }
 
         const target = navigationSection.first();
@@ -65,7 +56,7 @@ export class FooterPage {
                 });
 
                 if (isInViewport) {
-                    return true;
+                    return;
                 }
             } catch (error) {
                 // Ignore transient DOM detaches and retry until timeout.
@@ -74,7 +65,7 @@ export class FooterPage {
             await this.page.waitForTimeout(100);
         }
 
-        return false;
+        throw new Error(`Section "${linkText}" did not reach the viewport after clicking the footer link`);
     }
 
     async validateContactInfoDisplayed(): Promise<boolean> {

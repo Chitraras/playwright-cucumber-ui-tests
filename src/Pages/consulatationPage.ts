@@ -197,7 +197,6 @@ export  class ConsultationPage {
         if ((await ctaLocator.count()) === 0) {
             return false;
         }
-
         const target = ctaLocator.first();
         await target.waitFor({ state: 'visible', timeout: 5000 });
 
@@ -219,4 +218,5 @@ export  class ConsultationPage {
         }
         return false;
     }
-} 
+
+}
